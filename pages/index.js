@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
+import Header from "../components/Header";
+import Footer from "../components/Footer";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -8,13 +10,6 @@ const supabase = createClient(
 
 export default function Home() {
   const [listings, setListings] = useState([]);
-  const [form, setForm] = useState({
-    type: "Carro",
-    title: "",
-    description: "",
-    price: "",
-    contact: "",
-  });
 
   async function fetchListings() {
     const { data, error } = await supabase
@@ -28,44 +23,31 @@ export default function Home() {
     fetchListings();
   }, []);
 
-  function handleChange(e) {
-    const { name, value } = e.target;
-    setForm({ ...form, [name]: value });
-  }
-
-  async function handleSubmit() {
-    if (!form.title || !form.price || !form.contact) return;
-    const { error } = await supabase.from("listings").insert([form]);
-    if (!error) {
-      fetchListings();
-      setForm({ type: "Carro", title: "", description: "", price: "", contact: "" });
-    }
-  }
-
   return (
-    <div style={{ padding: 20, maxWidth: 800, margin: '0 auto' }}>
-      <h1 style={{ fontSize: 32, marginBottom: 20 }}>CompreFácil Auto</h1>
-      <div style={{ display: 'grid', gap: 10, marginBottom: 30 }}>
-        <select name="type" value={form.type} onChange={handleChange}>
-          <option value="Carro">Carro</option>
-          <option value="Moto">Moto</option>
-        </select>
-        <input name="title" placeholder="Marca e Modelo" value={form.title} onChange={handleChange} />
-        <textarea name="description" placeholder="Descrição" value={form.description} onChange={handleChange} />
-        <input name="price" placeholder="Preço" value={form.price} onChange={handleChange} />
-        <input name="contact" placeholder="Contato" value={form.contact} onChange={handleChange} />
-        <button onClick={handleSubmit}>Publicar Anúncio</button>
-      </div>
-      <div style={{ display: 'grid', gap: 20 }}>
-        {listings.map((item, idx) => (
-          <div key={idx} style={{ border: '1px solid #ccc', padding: 15, borderRadius: 5 }}>
-            <h2>{item.title}</h2>
-            <p><strong>{item.type}</strong> | {item.price}</p>
-            <p>{item.description}</p>
-            <p>Contato: {item.contact}</p>
-          </div>
-        ))}
-      </div>
+    <div className="min-h-screen flex flex-col">
+      <Header />
+      <main className="p-6 max-w-4xl mx-auto flex-1">
+        <div className="text-center mb-8">
+          <h2 className="text-3xl font-bold mb-2">Encontre o veículo ideal</h2>
+          <p className="text-gray-600">Carros e motos anunciados por pessoas reais.</p>
+          <a href="/novo-anuncio">
+            <button className="mt-4 px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+              Anunciar Agora
+            </button>
+          </a>
+        </div>
+        <div className="grid md:grid-cols-2 gap-4">
+          {listings.map((item, idx) => (
+            <div key={idx} className="border rounded p-4 shadow-sm">
+              <h3 className="text-lg font-semibold">{item.title}</h3>
+              <p className="text-sm text-gray-500">{item.type} • {item.price}</p>
+              <p className="text-sm mt-2">{item.description}</p>
+              <p className="text-sm text-blue-600 mt-1">Contato: {item.contact}</p>
+            </div>
+          ))}
+        </div>
+      </main>
+      <Footer />
     </div>
   );
 }
