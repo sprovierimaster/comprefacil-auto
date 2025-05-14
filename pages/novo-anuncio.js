@@ -17,18 +17,32 @@ export default function NovoAnuncio() {
     contact: "",
   });
 
+  const [loading, setLoading] = useState(false);
+
   function handleChange(e) {
     const { name, value } = e.target;
     setForm({ ...form, [name]: value });
   }
 
   async function handleSubmit() {
-    if (!form.title || !form.price || !form.contact) return;
+    if (!form.title || !form.price || !form.contact) {
+      alert("Por favor, preencha os campos obrigatórios: título, preço e contato.");
+      return;
+    }
+
+    setLoading(true);
+
     const { error } = await supabase.from("listings").insert([form]);
-    if (!error) {
+
+    if (error) {
+      console.error("Erro ao inserir:", error);
+      alert("Erro ao publicar anúncio. Verifique os dados ou tente novamente.");
+    } else {
       alert("Anúncio publicado com sucesso!");
       setForm({ type: "Carro", title: "", description: "", price: "", contact: "" });
     }
+
+    setLoading(false);
   }
 
   return (
@@ -41,12 +55,16 @@ export default function NovoAnuncio() {
             <option value="Carro">Carro</option>
             <option value="Moto">Moto</option>
           </select>
-          <input name="title" placeholder="Marca e Modelo" value={form.title} onChange={handleChange} className="border p-2 rounded" />
+          <input name="title" placeholder="Marca e Modelo *" value={form.title} onChange={handleChange} className="border p-2 rounded" />
           <textarea name="description" placeholder="Descrição" value={form.description} onChange={handleChange} className="border p-2 rounded" />
-          <input name="price" placeholder="Preço" value={form.price} onChange={handleChange} className="border p-2 rounded" />
-          <input name="contact" placeholder="Contato" value={form.contact} onChange={handleChange} className="border p-2 rounded" />
-          <button onClick={handleSubmit} className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-            Publicar Anúncio
+          <input name="price" placeholder="Preço *" value={form.price} onChange={handleChange} className="border p-2 rounded" />
+          <input name="contact" placeholder="Contato *" value={form.contact} onChange={handleChange} className="border p-2 rounded" />
+          <button
+            onClick={handleSubmit}
+            disabled={loading}
+            className={`px-4 py-2 rounded text-white ${loading ? "bg-gray-400" : "bg-blue-600 hover:bg-blue-700"}`}
+          >
+            {loading ? "Publicando..." : "Publicar Anúncio"}
           </button>
         </div>
       </main>
